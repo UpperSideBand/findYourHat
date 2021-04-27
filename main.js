@@ -4,7 +4,7 @@ const hat = '^';
 const hole = 'O';
 const fieldCharacter = '░';
 const pathCharacter = '*';
-const avatar = 'X';
+const avatar = 'P';
 const defaultRows = 12;
 const defaultColumns = 23;
 const defaultHolePercent = 0.12;
@@ -18,6 +18,9 @@ class Field {
         this._columns = field[0].length;
     }
 
+    get columns() {
+        return this._columns;
+    }
     get field() {
         return this._field;
     }
@@ -27,14 +30,11 @@ class Field {
     get locationY() {
         return this._locationY;
     }
-    get rows() {
-        return this._rows;
-    }
-    get columns() {
-        return this._columns;
-    }
     get playerLocation() {
         return this._field[this.locationY][this.locationX];
+    }
+    get rows() {
+        return this._rows;
     }
 
     set field(f) {
@@ -136,8 +136,8 @@ class Field {
         let hatY = randomFloor(this.rows);
         // Check that hat is not generated in current player location and fix if required
         while (hatX === this.locationX && hatY === this.locationY) {
-            let hatX = randomFloor(this.columns);
-            let hatY = randomFloor(this.rows);
+            hatX = randomFloor(this.columns);
+            hatY = randomFloor(this.rows);
         }
         this.field[hatY][hatX] = hat;
     }
@@ -169,5 +169,6 @@ function randomFloor(input) {
     return Math.floor(Math.random() * input);
 }
 
+// Init
 const playArea = new Field(Field.generateField());
 playArea.runGame();
