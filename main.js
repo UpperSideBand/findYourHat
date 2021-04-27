@@ -27,13 +27,14 @@ class Field {
     get locationY() {
         return this._locationY;
     }
-
     get rows() {
         return this._rows;
     }
-
     get columns() {
         return this._columns;
+    }
+    get playerLocation() {
+        return this._field[this.locationY][this.locationX];
     }
 
     set field(f) {
@@ -45,13 +46,15 @@ class Field {
     set locationY(locY) {
         this._locationY = locY;
     }
+    set playerLocation(char) {
+        this._field[this.locationY][this.locationX] = char;
+    }
 
     static generateField(
         rows = defaultRows,
         columns = defaultColumns,
         holesPercent = defaultHolePercent
     ) {
-        // Create playing field
         const field = new Array(rows);
         for (let y = 0; y < rows; y++) {
             field[y] = new Array(columns);
@@ -63,37 +66,20 @@ class Field {
         return field;
     }
 
-    runGame() {
-        let gameOver = false;
-        playArea.setRandomStartLocation();
-        playArea.setRandomHatLocation();
-        while (!gameOver) {
-            console.log('\nGo find your hat!');
-            this.displayField();
-            const prevX = this.locationX;
-            const prevY = this.locationY;
-            this.requestInput();
-            if (this.validMove()) {
-                this.field[prevY][prevX] = pathCharacter;
-                this.field[this.locationY][this.locationX] = avatar;
-            } else gameOver = true;
+    displayField() {
+        console.log('');
+        for (let y = 0; y < this._field.length; y++) {
+            console.log(this._field[y].join(''));
         }
+        console.log('');
     }
 
-    validMove() {
-        if (this.isOutOfBounds()) {
-            console.log(
-                '\nYou have gone out of bounds.\n\n  --== GAME OVER ==--'
-            );
-            return false;
-        } else if (this.isInHole()) {
-            console.log(
-                '\nYou have fallen in a hole.\n\n  --== GAME OVER ==--'
-            );
-            return false;
-        } else if (this.hatFound()) {
-            console.log('\nYou have found your hat!\n\n  --== YOU WIN! ==--');
-        } else return true;
+    hatFound() {
+        return this.playerLocation === hat ? true : false;
+    }
+
+    isInHole() {
+        return this.playerLocation === hole ? true : false;
     }
 
     isOutOfBounds() {
@@ -105,44 +91,8 @@ class Field {
             : true;
     }
 
-    isInHole() {
-        return this.field[this.locationY][this.locationX] === hole
-            ? true
-            : false;
-    }
-
-    hatFound() {
-        return this.field[this.locationY][this.locationX] === hat
-            ? true
-            : false;
-    }
-
-    setRandomStartLocation() {
-        this.locationX = Math.floor(Math.random() * this.columns);
-        this.locationY = Math.floor(Math.random() * this.rows);
-        this.field[this.locationY][this.locationX] = avatar;
-    }
-
-    setRandomHatLocation() {
-        let hatX = Math.floor(Math.random() * this.columns);
-        let hatY = Math.floor(Math.random() * this.rows);
-        while (hatX === this.locationX && hatY === this.locationY) {
-            let hatX = Math.floor(Math.random() * this.columns);
-            let hatY = Math.floor(Math.random() * this.rows);
-        }
-        this.field[hatY][hatX] = hat;
-    }
-
-    displayField() {
-        console.log('');
-        for (let y = 0; y < this._field.length; y++) {
-            console.log(this._field[y].join(''));
-        }
-        console.log('');
-    }
-
     requestInput() {
-        const reply = prompt('Which way? ').toUpperCase();
+        const reply = prompt('Which way would you like to go? ').toUpperCase();
         switch (reply) {
             case 'U':
                 this.locationY -= 1;
@@ -163,6 +113,60 @@ class Field {
                 break;
         }
     }
+
+    runGame() {
+        let gameOver = false;
+        this.setRandomStartLocation();
+        this.setRandomHatLocation();
+        while (!gameOver) {
+            console.log('\nGo find your hat!');
+            this.displayField();
+            const prevX = this.locationX;
+            const prevY = this.locationY;
+            this.requestInput();
+            if (this.validMove()) {
+                this.field[prevY][prevX] = pathCharacter;
+                this.playerLocation = avatar;
+            } else gameOver = true;
+        }
+    }
+
+    setRandomHatLocation() {
+        let hatX = randomFloor(this.columns);
+        let hatY = randomFloor(this.rows);
+        // Check that hat is not generated in current player location and fix if required
+        while (hatX === this.locationX && hatY === this.locationY) {
+            let hatX = randomFloor(this.columns);
+            let hatY = randomFloor(this.rows);
+        }
+        this.field[hatY][hatX] = hat;
+    }
+
+    setRandomStartLocation() {
+        this.locationX = randomFloor(this.columns);
+        this.locationY = randomFloor(this.rows);
+        this.playerLocation = avatar;
+    }
+
+    validMove() {
+        if (this.isOutOfBounds()) {
+            console.log(
+                '\nYou have gone out of bounds.\n\n  --== GAME OVER ==--'
+            );
+            return false;
+        } else if (this.isInHole()) {
+            console.log(
+                '\nYou have fallen in a hole.\n\n  --== GAME OVER ==--'
+            );
+            return false;
+        } else if (this.hatFound()) {
+            console.log('\nYou have found your hat!\n\n  --== YOU WIN! ==--');
+        } else return true;
+    }
+}
+
+function randomFloor(input) {
+    return Math.floor(Math.random() * input);
 }
 
 const playArea = new Field(Field.generateField());
