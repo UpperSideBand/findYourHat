@@ -47,7 +47,7 @@ class Field {
         this._locationY = locY;
     }
     set playerLocation(char) {
-        this._field[this.locationY][this.locationX] = char;
+        this.field[this.locationY][this.locationX] = char;
     }
 
     static generateField(
@@ -68,8 +68,8 @@ class Field {
 
     displayField() {
         console.log('');
-        for (let y = 0; y < this._field.length; y++) {
-            console.log(this._field[y].join(''));
+        for (let y = 0; y < this.rows; y++) {
+            console.log(this.field[y].join(''));
         }
         console.log('');
     }
